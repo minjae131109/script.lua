@@ -1,0 +1,3443 @@
+--// JASONHUB V3 - Ultimate Rayfield Version
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local VirtualUser = game:GetService("VirtualUser")
+local TeleportService = game:GetService("TeleportService")
+
+local player = Players.LocalPlayer
+
+--==================================================
+-- RAYFIELD
+--==================================================
+
+local Rayfield = loadstring(game:HttpGet(
+    "https://sirius.menu/rayfield"
+))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "JASONHUB V3",
+    LoadingTitle = "JASONHUB V3",
+    LoadingSubtitle = "Sword Fight",
+
+    ConfigurationSaving = {
+        Enabled = false
+    },
+
+    Discord = {
+        Enabled = false
+    },
+
+    KeySystem = true,
+
+    KeySettings = {
+        Title = "JASONHUB V3",
+        Subtitle = "Key System",
+        Note = "키를 입력하세요.",
+        FileName = "JASONHUB_V3_KEY",
+        SaveKey = false,
+        GrabKeyFromSite = false,
+        Key = {
+            "JASONHUB V3 secret"
+        }
+    }
+})
+
+--==================================================
+-- STATE
+--==================================================
+
+local grabOn = false
+local noclipOn = false
+local flyOn = false
+local xrayOn = false
+local fullbrightOn = false
+local wallClimbOn = false
+
+local swimOn = false
+local infiniteJumpOn = false
+local bunnyHopOn = false
+local airWalkOn = false
+local noFallDamageOn = false
+local antiAfkOn = false
+local antiFlingOn = false
+local autoRespawnOn = false
+
+local chamsOn = false
+local crosshairOn = false
+local weaponESPOn = false
+local shaderOn = false
+local nightModeOn = false
+
+local clickTeleportOn = false
+
+local targetLockOn = false
+local predictionOn = false
+
+local walkSpeed = 16
+local jumpPower = 50
+local flySpeed = 50
+local swimSpeed = 35
+local wallClimbSpeed = 50
+local cameraFOV = 70
+local cameraZoom = 12
+
+--==================================================
+-- GRAPHICS FUNCTIONS
+--==================================================
+
+local originalLighting = {}
+local lightingSaved = false
+
+local shaderEffects = {}
+
+local shaderLightingSaved = false
+local shaderOriginalGlobalShadows = nil
+local shaderOriginalDiffuse = nil
+local shaderOriginalSpecular = nil
+local shaderOriginalTechnology = nil
+
+local function saveLighting()
+    if lightingSaved then
+        return
+    end
+
+    pcall(function()
+        originalLighting.Brightness =
+            Lighting.Brightness
+
+        originalLighting.ClockTime =
+            Lighting.ClockTime
+
+        originalLighting.FogEnd =
+            Lighting.FogEnd
+
+        originalLighting.FogStart =
+            Lighting.FogStart
+
+        originalLighting.GlobalShadows =
+            Lighting.GlobalShadows
+
+        originalLighting.OutdoorAmbient =
+            Lighting.OutdoorAmbient
+
+        originalLighting.Ambient =
+            Lighting.Ambient
+
+        if Lighting.EnvironmentDiffuseScale ~= nil then
+            originalLighting.EnvironmentDiffuseScale =
+                Lighting.EnvironmentDiffuseScale
+        end
+
+        if Lighting.EnvironmentSpecularScale ~= nil then
+            originalLighting.EnvironmentSpecularScale =
+                Lighting.EnvironmentSpecularScale
+        end
+
+        if Lighting.Technology ~= nil then
+            originalLighting.Technology =
+                Lighting.Technology
+        end
+    end)
+
+    lightingSaved = true
+end
+
+local function saveShaderLighting()
+    if shaderLightingSaved then
+        return
+    end
+
+    pcall(function()
+        shaderOriginalGlobalShadows =
+            Lighting.GlobalShadows
+
+        if Lighting.EnvironmentDiffuseScale ~= nil then
+            shaderOriginalDiffuse =
+                Lighting.EnvironmentDiffuseScale
+        end
+
+        if Lighting.EnvironmentSpecularScale ~= nil then
+            shaderOriginalSpecular =
+                Lighting.EnvironmentSpecularScale
+        end
+
+        if Lighting.Technology ~= nil then
+            shaderOriginalTechnology =
+                Lighting.Technology
+        end
+    end)
+
+    shaderLightingSaved = true
+end
+
+--==================================================
+-- FULLBRIGHT
+--==================================================
+
+local function enableFullbright()
+
+    saveLighting()
+
+    fullbrightOn = true
+
+    if shaderOn then
+        shaderOn = false
+
+        for _, effect in pairs(shaderEffects) do
+            pcall(function()
+                effect:Destroy()
+            end)
+        end
+
+        table.clear(shaderEffects)
+
+        if shaderLightingSaved then
+            pcall(function()
+                Lighting.GlobalShadows =
+                    shaderOriginalGlobalShadows
+
+                if shaderOriginalDiffuse ~= nil then
+                    Lighting.EnvironmentDiffuseScale =
+                        shaderOriginalDiffuse
+                end
+
+                if shaderOriginalSpecular ~= nil then
+                    Lighting.EnvironmentSpecularScale =
+                        shaderOriginalSpecular
+                end
+
+                if shaderOriginalTechnology ~= nil then
+                    Lighting.Technology =
+                        shaderOriginalTechnology
+                end
+            end)
+
+            shaderLightingSaved = false
+        end
+    end
+
+    pcall(function()
+
+        Lighting.Brightness = 10
+        Lighting.ClockTime = 12
+        Lighting.FogEnd = 100000
+        Lighting.FogStart = 0
+
+        Lighting.GlobalShadows = false
+
+        Lighting.OutdoorAmbient =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            )
+
+        Lighting.Ambient =
+            Color3.fromRGB(
+                255,
+                255,
+                255
+            )
+
+        if Lighting.EnvironmentDiffuseScale ~= nil then
+            Lighting.EnvironmentDiffuseScale = 1
+        end
+
+        if Lighting.EnvironmentSpecularScale ~= nil then
+            Lighting.EnvironmentSpecularScale = 1
+        end
+
+    end)
+end
+
+local function disableFullbright()
+
+    fullbrightOn = false
+
+    if not lightingSaved then
+        return
+    end
+
+    pcall(function()
+
+        Lighting.Brightness =
+            originalLighting.Brightness
+
+        Lighting.ClockTime =
+            originalLighting.ClockTime
+
+        Lighting.FogEnd =
+            originalLighting.FogEnd
+
+        Lighting.FogStart =
+            originalLighting.FogStart
+
+        Lighting.GlobalShadows =
+            originalLighting.GlobalShadows
+
+        Lighting.OutdoorAmbient =
+            originalLighting.OutdoorAmbient
+
+        Lighting.Ambient =
+            originalLighting.Ambient
+
+        if originalLighting.EnvironmentDiffuseScale ~= nil then
+            Lighting.EnvironmentDiffuseScale =
+                originalLighting.EnvironmentDiffuseScale
+        end
+
+        if originalLighting.EnvironmentSpecularScale ~= nil then
+            Lighting.EnvironmentSpecularScale =
+                originalLighting.EnvironmentSpecularScale
+        end
+
+        if originalLighting.Technology ~= nil then
+            Lighting.Technology =
+                originalLighting.Technology
+        end
+
+    end)
+end
+
+--==================================================
+-- SHADER
+--==================================================
+
+local function createShader()
+
+    if fullbrightOn then
+        disableFullbright()
+    end
+
+    for _, effect in pairs(shaderEffects) do
+        pcall(function()
+            effect:Destroy()
+        end)
+    end
+
+    table.clear(shaderEffects)
+
+    saveShaderLighting()
+
+    pcall(function()
+
+        Lighting.GlobalShadows = true
+
+        if Lighting.Technology ~= nil then
+            pcall(function()
+                Lighting.Technology =
+                    Enum.Technology.Future
+            end)
+        end
+
+        if Lighting.EnvironmentDiffuseScale ~= nil then
+            Lighting.EnvironmentDiffuseScale =
+                0.35
+        end
+
+        if Lighting.EnvironmentSpecularScale ~= nil then
+            Lighting.EnvironmentSpecularScale =
+                0.45
+        end
+
+    end)
+
+    local color =
+        Instance.new("ColorCorrectionEffect")
+
+    color.Name =
+        "JASON_SHADER_COLOR"
+
+    color.Contrast = 0.35
+    color.Saturation = 0.18
+    color.Brightness = -0.03
+    color.Parent = Lighting
+
+    local bloom =
+        Instance.new("BloomEffect")
+
+    bloom.Name =
+        "JASON_SHADER_BLOOM"
+
+    bloom.Intensity = 0.12
+    bloom.Size = 18
+    bloom.Threshold = 1.4
+    bloom.Parent = Lighting
+
+    local rays =
+        Instance.new("SunRaysEffect")
+
+    rays.Name =
+        "JASON_SHADER_RAYS"
+
+    rays.Intensity = 0.10
+    rays.Spread = 0.75
+    rays.Parent = Lighting
+
+    shaderEffects.Color = color
+    shaderEffects.Bloom = bloom
+    shaderEffects.Rays = rays
+end
+
+local function removeShader()
+
+    for _, effect in pairs(shaderEffects) do
+        if effect then
+            pcall(function()
+                effect:Destroy()
+            end)
+        end
+    end
+
+    table.clear(shaderEffects)
+
+    if shaderLightingSaved then
+
+        pcall(function()
+
+            if shaderOriginalGlobalShadows ~= nil then
+                Lighting.GlobalShadows =
+                    shaderOriginalGlobalShadows
+            end
+
+            if shaderOriginalDiffuse ~= nil then
+                Lighting.EnvironmentDiffuseScale =
+                    shaderOriginalDiffuse
+            end
+
+            if shaderOriginalSpecular ~= nil then
+                Lighting.EnvironmentSpecularScale =
+                    shaderOriginalSpecular
+            end
+
+            if shaderOriginalTechnology ~= nil then
+                Lighting.Technology =
+                    shaderOriginalTechnology
+            end
+
+        end)
+
+        shaderLightingSaved = false
+    end
+end
+
+--==================================================
+-- NIGHT MODE
+--==================================================
+
+local nightOriginalClock = nil
+
+local function enableNightMode()
+
+    if nightOriginalClock == nil then
+        nightOriginalClock =
+            Lighting.ClockTime
+    end
+
+    Lighting.ClockTime = 0
+    nightModeOn = true
+end
+
+local function disableNightMode()
+
+    if nightOriginalClock ~= nil then
+
+        Lighting.ClockTime =
+            nightOriginalClock
+
+        nightOriginalClock = nil
+    end
+
+    nightModeOn = false
+end
+
+--==================================================
+-- MAIN
+--==================================================
+
+local MainTab =
+    Window:CreateTab(
+        "Main",
+        4483362458
+    )
+
+MainTab:CreateSection("Basic")
+
+--==================================================
+-- GRAB
+--==================================================
+
+local grabConnection
+
+local function equipTool(tool)
+
+    if not grabOn then return end
+    if not tool:IsA("Tool") then return end
+    if not tool:FindFirstChild("Handle") then return end
+
+    local char =
+        player.Character
+
+    if not char then return end
+
+    local humanoid =
+        char:FindFirstChildWhichIsA(
+            "Humanoid"
+        )
+
+    if not humanoid then return end
+
+    pcall(function()
+        humanoid:EquipTool(tool)
+    end)
+end
+
+local function grabTools()
+
+    if not grabOn then
+        return
+    end
+
+    for _, tool in ipairs(
+        workspace:GetChildren()
+    ) do
+
+        if not grabOn then
+            break
+        end
+
+        if tool:IsA("Tool")
+            and tool:FindFirstChild("Handle") then
+
+            equipTool(tool)
+        end
+    end
+end
+
+MainTab:CreateToggle({
+    Name = "Grab Tools",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        grabOn = Value
+
+        if grabConnection then
+            grabConnection:Disconnect()
+            grabConnection = nil
+        end
+
+        if not Value then
+            return
+        end
+
+        task.spawn(function()
+
+            while grabOn do
+                grabTools()
+                RunService.Heartbeat:Wait()
+            end
+
+        end)
+
+        grabConnection =
+            workspace.ChildAdded:Connect(
+                function(obj)
+
+                    if grabOn
+                        and obj:IsA("Tool") then
+
+                        task.spawn(function()
+                            equipTool(obj)
+                        end)
+
+                    end
+                end
+            )
+    end
+})
+
+--==================================================
+-- TRANSPARENCY
+--==================================================
+
+MainTab:CreateButton({
+    Name = "투명화",
+
+    Callback = function()
+
+        pcall(function()
+
+            loadstring(game:HttpGet(
+                "https://pastebin.com/raw/fzx5knqe"
+            ))()
+
+        end)
+    end
+})
+
+--==================================================
+-- RUPKILL
+--==================================================
+
+MainTab:CreateButton({
+    Name = "뤂킬",
+
+    Callback = function()
+
+        task.spawn(function()
+
+            pcall(function()
+
+                local source =
+                    game:HttpGet(
+                        "https://pastebin.com/raw/dncT3TEh"
+                    )
+
+                local func =
+                    loadstring(source)
+
+                if func then
+                    func()
+                end
+
+            end)
+        end)
+    end
+})
+
+--==================================================
+-- XRAY
+--==================================================
+
+local xrayOriginalTransparency = {}
+
+local function applyXRay(part)
+
+    if not part:IsA("BasePart") then
+        return
+    end
+
+    if xrayOriginalTransparency[part] == nil then
+
+        xrayOriginalTransparency[part] =
+            part.LocalTransparencyModifier
+
+    end
+
+    part.LocalTransparencyModifier = 0.65
+end
+
+local function enableXRay()
+
+    xrayOn = true
+
+    for _, obj in ipairs(
+        workspace:GetDescendants()
+    ) do
+
+        applyXRay(obj)
+    end
+end
+
+local function disableXRay()
+
+    xrayOn = false
+
+    for obj, value in pairs(
+        xrayOriginalTransparency
+    ) do
+
+        if obj and obj.Parent then
+
+            obj.LocalTransparencyModifier =
+                value
+
+        end
+    end
+
+    table.clear(
+        xrayOriginalTransparency
+    )
+end
+
+MainTab:CreateToggle({
+    Name = "Xray",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        if Value then
+            enableXRay()
+        else
+            disableXRay()
+        end
+
+    end
+})
+
+workspace.DescendantAdded:Connect(
+    function(obj)
+
+        if xrayOn
+            and obj:IsA("BasePart") then
+
+            task.defer(function()
+                applyXRay(obj)
+            end)
+
+        end
+    end
+)
+
+--==================================================
+-- CHAMS
+--==================================================
+
+local chams = {}
+
+local function createCham(target)
+
+    if target == player then
+        return
+    end
+
+    if chams[target] then
+
+        pcall(function()
+            chams[target]:Destroy()
+        end)
+
+        chams[target] = nil
+    end
+
+    if not target.Character then
+        return
+    end
+
+    local highlight =
+        Instance.new("Highlight")
+
+    highlight.Name =
+        "JASON_CHAMS"
+
+    highlight.FillColor =
+        Color3.fromRGB(
+            255,
+            0,
+            0
+        )
+
+    highlight.OutlineColor =
+        Color3.fromRGB(
+            255,
+            0,
+            0
+        )
+
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.Enabled = chamsOn
+    highlight.Adornee =
+        target.Character
+
+    highlight.Parent =
+        target.Character
+
+    chams[target] =
+        highlight
+end
+
+for _, p in ipairs(
+    Players:GetPlayers()
+) do
+
+    if p ~= player then
+
+        createCham(p)
+
+        p.CharacterAdded:Connect(
+            function()
+
+                task.wait(0.2)
+
+                createCham(p)
+
+            end
+        )
+    end
+end
+
+Players.PlayerAdded:Connect(
+    function(p)
+
+        if p == player then
+            return
+        end
+
+        p.CharacterAdded:Connect(
+            function()
+
+                task.wait(0.2)
+
+                createCham(p)
+
+            end
+        )
+    end
+)
+
+Players.PlayerRemoving:Connect(
+    function(p)
+
+        if chams[p] then
+
+            pcall(function()
+                chams[p]:Destroy()
+            end)
+
+            chams[p] = nil
+        end
+    end
+)
+
+RunService.RenderStepped:Connect(
+    function()
+
+        if not chamsOn then
+            return
+        end
+
+        for _, highlight in pairs(chams) do
+
+            if highlight then
+
+                highlight.FillColor =
+                    Color3.fromRGB(
+                        255,
+                        0,
+                        0
+                    )
+
+                highlight.OutlineColor =
+                    Color3.fromRGB(
+                        255,
+                        0,
+                        0
+                    )
+
+            end
+        end
+    end
+)
+
+MainTab:CreateToggle({
+    Name = "Chams",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        chamsOn = Value
+
+        for _, highlight in pairs(chams) do
+
+            if highlight then
+                highlight.Enabled = Value
+            end
+
+        end
+    end
+})
+
+--==================================================
+-- CROSSHAIR
+--==================================================
+
+local CrosshairGui =
+    Instance.new("ScreenGui")
+
+CrosshairGui.Name =
+    "JASON_CROSSHAIR"
+
+CrosshairGui.IgnoreGuiInset = true
+CrosshairGui.ResetOnSpawn = false
+CrosshairGui.Parent =
+    game.CoreGui
+
+local crossParts = {}
+
+for i = 1,4 do
+
+    local frame =
+        Instance.new("Frame")
+
+    frame.BackgroundColor3 =
+        Color3.fromRGB(
+            255,
+            255,
+            255
+        )
+
+    frame.BorderSizePixel = 0
+    frame.Parent =
+        CrosshairGui
+
+    table.insert(
+        crossParts,
+        frame
+    )
+end
+
+local function updateCrosshair()
+
+    local camera =
+        workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local center =
+        camera.ViewportSize / 2
+
+    local size = 8
+    local thickness = 2
+
+    crossParts[1].Size =
+        UDim2.fromOffset(
+            thickness,
+            size
+        )
+
+    crossParts[1].Position =
+        UDim2.fromOffset(
+            center.X - thickness/2,
+            center.Y - size - 3
+        )
+
+    crossParts[2].Size =
+        UDim2.fromOffset(
+            thickness,
+            size
+        )
+
+    crossParts[2].Position =
+        UDim2.fromOffset(
+            center.X - thickness/2,
+            center.Y + 3
+        )
+
+    crossParts[3].Size =
+        UDim2.fromOffset(
+            size,
+            thickness
+        )
+
+    crossParts[3].Position =
+        UDim2.fromOffset(
+            center.X - size - 3,
+            center.Y - thickness/2
+        )
+
+    crossParts[4].Size =
+        UDim2.fromOffset(
+            size,
+            thickness
+        )
+
+    crossParts[4].Position =
+        UDim2.fromOffset(
+            center.X + 3,
+            center.Y - thickness/2
+        )
+
+    for _, part in ipairs(crossParts) do
+        part.Visible =
+            crosshairOn
+    end
+end
+
+RunService.RenderStepped:Connect(
+    updateCrosshair
+)
+
+MainTab:CreateToggle({
+    Name = "Crosshair",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        crosshairOn = Value
+    end
+})
+
+--==================================================
+-- MOVEMENT
+--==================================================
+
+MainTab:CreateSection("Movement")
+
+MainTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        noclipOn = Value
+    end
+})
+
+RunService.Stepped:Connect(
+    function()
+
+        if not noclipOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        if not char then
+            return
+        end
+
+        for _, part in ipairs(
+            char:GetDescendants()
+        ) do
+
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+
+        end
+    end
+)
+
+MainTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16,300},
+    Increment = 1,
+    Suffix = "Speed",
+    CurrentValue = 16,
+
+    Callback = function(Value)
+
+        walkSpeed = Value
+
+        local char =
+            player.Character
+
+        local hum =
+            char and
+            char:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if hum then
+            hum.WalkSpeed = Value
+        end
+
+    end
+})
+
+MainTab:CreateSlider({
+    Name = "Jump Power",
+    Range = {50,300},
+    Increment = 5,
+    Suffix = "Power",
+    CurrentValue = 50,
+
+    Callback = function(Value)
+
+        jumpPower = Value
+
+        local char =
+            player.Character
+
+        local hum =
+            char and
+            char:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if hum then
+
+            hum.UseJumpPower = true
+            hum.JumpPower = Value
+
+        end
+    end
+})
+
+MainTab:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        infiniteJumpOn = Value
+    end
+})
+
+UserInputService.JumpRequest:Connect(
+    function()
+
+        if not infiniteJumpOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        local hum =
+            char and
+            char:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if hum then
+
+            hum:ChangeState(
+                Enum.HumanoidStateType.Jumping
+            )
+
+        end
+    end
+)
+
+MainTab:CreateToggle({
+    Name = "Bunny Hop",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        bunnyHopOn = Value
+    end
+})
+
+RunService.Heartbeat:Connect(
+    function()
+
+        if not bunnyHopOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        local hum =
+            char and
+            char:FindFirstChildOfClass(
+                "Humanoid"
+            )
+
+        if hum
+            and hum.MoveDirection.Magnitude > 0 then
+
+            if hum.FloorMaterial
+                ~= Enum.Material.Air then
+
+                hum:ChangeState(
+                    Enum.HumanoidStateType.Jumping
+                )
+
+            end
+        end
+    end
+)
+
+MainTab:CreateToggle({
+    Name = "No Fall Damage",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        noFallDamageOn = Value
+    end
+})
+
+RunService.Heartbeat:Connect(
+    function()
+
+        if not noFallDamageOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        local root =
+            char and
+            char:FindFirstChild(
+                "HumanoidRootPart"
+            )
+
+        if root then
+
+            local velocity =
+                root.AssemblyLinearVelocity
+
+            if velocity.Y < -80 then
+
+                root.AssemblyLinearVelocity =
+                    Vector3.new(
+                        velocity.X,
+                        -20,
+                        velocity.Z
+                    )
+
+            end
+        end
+    end
+)
+
+MainTab:CreateToggle({
+    Name = "Air Walk",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        airWalkOn = Value
+    end
+})
+
+RunService.Heartbeat:Connect(
+    function()
+
+        if not airWalkOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        local root =
+            char and
+            char:FindFirstChild(
+                "HumanoidRootPart"
+            )
+
+        if root then
+
+            local velocity =
+                root.AssemblyLinearVelocity
+
+            root.AssemblyLinearVelocity =
+                Vector3.new(
+                    velocity.X,
+                    0,
+                    velocity.Z
+                )
+
+        end
+    end
+)
+
+--==================================================
+-- FLY
+--==================================================
+
+local flyConnection
+
+local function stopFly()
+
+    flyOn = false
+
+    if flyConnection then
+        flyConnection:Disconnect()
+        flyConnection = nil
+    end
+
+    local char =
+        player.Character
+
+    if not char then
+        return
+    end
+
+    local root =
+        char:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    local hum =
+        char:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if root then
+
+        local bv =
+            root:FindFirstChild(
+                "JASON_FLY_VELOCITY"
+            )
+
+        if bv then
+            bv:Destroy()
+        end
+
+        local bg =
+            root:FindFirstChild(
+                "JASON_FLY_GYRO"
+            )
+
+        if bg then
+            bg:Destroy()
+        end
+    end
+
+    if hum then
+        hum.PlatformStand = false
+    end
+end
+
+local function startFly()
+
+    stopFly()
+
+    flyOn = true
+
+    local char =
+        player.Character
+
+    if not char then
+        return
+    end
+
+    local root =
+        char:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    local hum =
+        char:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if not root or not hum then
+
+        flyOn = false
+        return
+    end
+
+    local bv =
+        Instance.new("BodyVelocity")
+
+    bv.Name =
+        "JASON_FLY_VELOCITY"
+
+    bv.MaxForce =
+        Vector3.new(
+            math.huge,
+            math.huge,
+            math.huge
+        )
+
+    bv.Parent = root
+
+    local bg =
+        Instance.new("BodyGyro")
+
+    bg.Name =
+        "JASON_FLY_GYRO"
+
+    bg.MaxTorque =
+        Vector3.new(
+            math.huge,
+            math.huge,
+            math.huge
+        )
+
+    bg.P = 9000
+    bg.Parent = root
+
+    hum.PlatformStand = true
+
+    flyConnection =
+        RunService.RenderStepped:Connect(
+            function()
+
+                if not flyOn then
+                    return
+                end
+
+                local camera =
+                    workspace.CurrentCamera
+
+                if not camera then
+                    return
+                end
+
+                local direction =
+                    Vector3.zero
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.W
+                ) then
+
+                    direction +=
+                        camera.CFrame.LookVector
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.S
+                ) then
+
+                    direction -=
+                        camera.CFrame.LookVector
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.A
+                ) then
+
+                    direction -=
+                        camera.CFrame.RightVector
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.D
+                ) then
+
+                    direction +=
+                        camera.CFrame.RightVector
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.Space
+                ) then
+
+                    direction +=
+                        Vector3.yAxis
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.LeftControl
+                ) then
+
+                    direction -=
+                        Vector3.yAxis
+
+                end
+
+                if direction.Magnitude > 0 then
+
+                    direction =
+                        direction.Unit
+
+                end
+
+                bv.Velocity =
+                    direction * flySpeed
+
+                bg.CFrame =
+                    camera.CFrame
+
+            end
+        )
+end
+
+MainTab:CreateToggle({
+    Name = "Fly",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        if Value then
+            startFly()
+        else
+            stopFly()
+        end
+
+    end
+})
+
+MainTab:CreateSlider({
+    Name = "Fly Speed",
+    Range = {10,500},
+    Increment = 10,
+    Suffix = "Speed",
+    CurrentValue = 50,
+
+    Callback = function(Value)
+        flySpeed = Value
+    end
+})
+
+--==================================================
+-- SWIM
+--==================================================
+
+local swimConnection
+
+local function stopSwim()
+
+    swimOn = false
+
+    if swimConnection then
+        swimConnection:Disconnect()
+        swimConnection = nil
+    end
+
+    local char =
+        player.Character
+
+    if not char then
+        return
+    end
+
+    local root =
+        char:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    local hum =
+        char:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if root then
+
+        local bv =
+            root:FindFirstChild(
+                "JASON_SWIM_VELOCITY"
+            )
+
+        if bv then
+            bv:Destroy()
+        end
+
+        local bg =
+            root:FindFirstChild(
+                "JASON_SWIM_GYRO"
+            )
+
+        if bg then
+            bg:Destroy()
+        end
+    end
+
+    if hum then
+        hum.PlatformStand = false
+    end
+end
+
+local function startSwim()
+
+    stopSwim()
+
+    swimOn = true
+
+    local char =
+        player.Character
+
+    if not char then
+        return
+    end
+
+    local root =
+        char:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    local hum =
+        char:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if not root or not hum then
+
+        swimOn = false
+        return
+    end
+
+    local bv =
+        Instance.new("BodyVelocity")
+
+    bv.Name =
+        "JASON_SWIM_VELOCITY"
+
+    bv.MaxForce =
+        Vector3.new(
+            math.huge,
+            math.huge,
+            math.huge
+        )
+
+    bv.P = 3000
+    bv.Parent = root
+
+    local bg =
+        Instance.new("BodyGyro")
+
+    bg.Name =
+        "JASON_SWIM_GYRO"
+
+    bg.MaxTorque =
+        Vector3.new(
+            math.huge,
+            math.huge,
+            math.huge
+        )
+
+    bg.P = 5000
+    bg.Parent = root
+
+    swimConnection =
+        RunService.RenderStepped:Connect(
+            function()
+
+                if not swimOn then
+                    return
+                end
+
+                local camera =
+                    workspace.CurrentCamera
+
+                if not camera then
+                    return
+                end
+
+                local direction =
+                    hum.MoveDirection
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.Space
+                ) then
+
+                    direction +=
+                        Vector3.yAxis
+
+                end
+
+                if UserInputService:IsKeyDown(
+                    Enum.KeyCode.LeftControl
+                ) then
+
+                    direction -=
+                        Vector3.yAxis
+
+                end
+
+                if direction.Magnitude > 0 then
+
+                    direction =
+                        direction.Unit
+
+                end
+
+                bv.Velocity =
+                    direction * swimSpeed
+
+                bg.CFrame =
+                    camera.CFrame
+
+                hum:ChangeState(
+                    Enum.HumanoidStateType.Swimming
+                )
+
+            end
+        )
+end
+
+MainTab:CreateToggle({
+    Name = "Swim Mode",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        if Value then
+            startSwim()
+        else
+            stopSwim()
+        end
+
+    end
+})
+
+MainTab:CreateSlider({
+    Name = "Swim Speed",
+    Range = {10,200},
+    Increment = 5,
+    Suffix = "Speed",
+    CurrentValue = 35,
+
+    Callback = function(Value)
+        swimSpeed = Value
+    end
+})
+
+--==================================================
+-- WALL CLIMB
+--==================================================
+
+local wallClimbConnection
+
+local function stopWallClimb()
+
+    if wallClimbConnection then
+
+        wallClimbConnection:Disconnect()
+        wallClimbConnection = nil
+
+    end
+end
+
+local function startWallClimb()
+
+    stopWallClimb()
+
+    wallClimbConnection =
+        RunService.Heartbeat:Connect(
+            function()
+
+                if not wallClimbOn then
+                    return
+                end
+
+                local char =
+                    player.Character
+
+                if not char then
+                    return
+                end
+
+                local root =
+                    char:FindFirstChild(
+                        "HumanoidRootPart"
+                    )
+
+                if not root then
+                    return
+                end
+
+                local params =
+                    RaycastParams.new()
+
+                params.FilterDescendantsInstances =
+                    {char}
+
+                params.FilterType =
+                    Enum.RaycastFilterType.Exclude
+
+                local directions = {
+
+                    root.CFrame.LookVector,
+
+                    -root.CFrame.LookVector,
+
+                    root.CFrame.RightVector,
+
+                    -root.CFrame.RightVector
+                }
+
+                for _, direction in ipairs(
+                    directions
+                ) do
+
+                    local result =
+                        workspace:Raycast(
+                            root.Position,
+                            direction * 3,
+                            params
+                        )
+
+                    if result then
+
+                        local v =
+                            root.AssemblyLinearVelocity
+
+                        root.AssemblyLinearVelocity =
+                            Vector3.new(
+                                v.X,
+                                wallClimbSpeed,
+                                v.Z
+                            )
+
+                        break
+                    end
+                end
+            end
+        )
+end
+
+MainTab:CreateToggle({
+    Name = "Wall Climb",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        wallClimbOn = Value
+
+        if Value then
+            startWallClimb()
+        else
+            stopWallClimb()
+        end
+
+    end
+})
+
+MainTab:CreateSlider({
+    Name = "Wall Climb Speed",
+    Range = {10,200},
+    Increment = 10,
+    Suffix = "Speed",
+    CurrentValue = 50,
+
+    Callback = function(Value)
+        wallClimbSpeed = Value
+    end
+})
+
+--==================================================
+-- ANTI AFK
+--==================================================
+
+MainTab:CreateToggle({
+    Name = "Anti-AFK",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        antiAfkOn = Value
+    end
+})
+
+player.Idled:Connect(
+    function()
+
+        if antiAfkOn then
+
+            pcall(function()
+
+                VirtualUser:CaptureController()
+
+                VirtualUser:ClickButton2(
+                    Vector2.new()
+                )
+
+            end)
+        end
+    end
+)
+
+--==================================================
+-- ANTI FLING
+--==================================================
+
+MainTab:CreateToggle({
+    Name = "Anti-Fling",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        antiFlingOn = Value
+    end
+})
+
+RunService.Heartbeat:Connect(
+    function()
+
+        if not antiFlingOn then
+            return
+        end
+
+        local char =
+            player.Character
+
+        local root =
+            char and
+            char:FindFirstChild(
+                "HumanoidRootPart"
+            )
+
+        if root then
+
+            local velocity =
+                root.AssemblyLinearVelocity
+
+            if velocity.Magnitude > 250 then
+
+                root.AssemblyLinearVelocity =
+                    Vector3.zero
+
+            end
+        end
+    end
+)
+
+--==================================================
+-- AUTO RESPAWN
+--==================================================
+
+MainTab:CreateToggle({
+    Name = "Auto Respawn",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        autoRespawnOn = Value
+    end
+})
+
+--==================================================
+-- CHARACTER
+--==================================================
+
+local function setupCharacter(char)
+
+    task.wait(0.5)
+
+    local hum =
+        char:FindFirstChildOfClass(
+            "Humanoid"
+        )
+
+    if hum then
+
+        hum.WalkSpeed =
+            walkSpeed
+
+        hum.UseJumpPower =
+            true
+
+        hum.JumpPower =
+            jumpPower
+
+        hum.Died:Connect(
+            function()
+
+                if autoRespawnOn then
+
+                    task.wait(1)
+
+                    pcall(function()
+                        player:LoadCharacter()
+                    end)
+
+                end
+            end
+        )
+    end
+end
+
+player.CharacterAdded:Connect(
+    setupCharacter
+)
+
+if player.Character then
+
+    task.spawn(function()
+        setupCharacter(
+            player.Character
+        )
+    end)
+
+end
+
+--==================================================
+-- AIM
+--==================================================
+
+local AimTab =
+    Window:CreateTab(
+        "Aim",
+        4483362458
+    )
+
+AimTab:CreateSection("Aimbot")
+
+local AimEnabled = false
+local AimFOV = 150
+local AimSmooth = 0.15
+local AimDistance = 1000
+local AimTeamCheck = true
+
+local AimGui =
+    Instance.new("ScreenGui")
+
+AimGui.Name =
+    "JASON_AIM_FOV"
+
+AimGui.IgnoreGuiInset = true
+AimGui.ResetOnSpawn = false
+AimGui.Parent =
+    game.CoreGui
+
+local FOVCircle =
+    Instance.new("Frame")
+
+FOVCircle.BackgroundTransparency = 1
+FOVCircle.Visible = false
+FOVCircle.Parent = AimGui
+
+local corner =
+    Instance.new("UICorner")
+
+corner.CornerRadius =
+    UDim.new(1,0)
+
+corner.Parent =
+    FOVCircle
+
+local stroke =
+    Instance.new("UIStroke")
+
+stroke.Thickness = 2
+
+stroke.Color =
+    Color3.fromRGB(
+        0,
+        255,
+        0
+    )
+
+stroke.Parent =
+    FOVCircle
+
+local function getClosest()
+
+    local camera =
+        workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local center =
+        camera.ViewportSize / 2
+
+    local closest
+    local shortest = AimFOV
+
+    for _, target in ipairs(
+        Players:GetPlayers()
+    ) do
+
+        if target ~= player
+            and target.Character then
+
+            local hum =
+                target.Character:
+                FindFirstChildOfClass(
+                    "Humanoid"
+                )
+
+            local head =
+                target.Character:
+                FindFirstChild(
+                    "Head"
+                )
+
+            if hum
+                and hum.Health > 0
+                and head then
+
+                if AimTeamCheck
+                    and target.Team
+                    == player.Team then
+
+                    continue
+                end
+
+                local pos, onScreen =
+                    camera:WorldToViewportPoint(
+                        head.Position
+                    )
+
+                if onScreen then
+
+                    local distance =
+                        (
+                            Vector2.new(
+                                pos.X,
+                                pos.Y
+                            ) - center
+                        ).Magnitude
+
+                    local worldDistance =
+                        (
+                            head.Position
+                            - camera.CFrame.Position
+                        ).Magnitude
+
+                    if distance < shortest
+                        and worldDistance
+                        <= AimDistance then
+
+                        closest =
+                            target
+
+                        shortest =
+                            distance
+
+                    end
+                end
+            end
+        end
+    end
+
+    return closest
+end
+
+RunService.RenderStepped:Connect(
+    function()
+
+        local camera =
+            workspace.CurrentCamera
+
+        if not camera then
+            return
+        end
+
+        FOVCircle.Size =
+            UDim2.fromOffset(
+                AimFOV * 2,
+                AimFOV * 2
+            )
+
+        FOVCircle.Position =
+            UDim2.new(
+                0.5,
+                -AimFOV,
+                0.5,
+                -AimFOV
+            )
+
+        FOVCircle.Visible =
+            AimEnabled
+
+        if not AimEnabled then
+            return
+        end
+
+        local target =
+            getClosest()
+
+        if target
+            and target.Character then
+
+            local head =
+                target.Character:
+                FindFirstChild(
+                    "Head"
+                )
+
+            if head then
+
+                local targetCF =
+                    CFrame.new(
+                        camera.CFrame.Position,
+                        head.Position
+                    )
+
+                camera.CFrame =
+                    camera.CFrame:Lerp(
+                        targetCF,
+                        AimSmooth
+                    )
+
+                stroke.Color =
+                    Color3.fromRGB(
+                        255,
+                        0,
+                        0
+                    )
+            end
+
+        else
+
+            stroke.Color =
+                Color3.fromRGB(
+                    0,
+                    255,
+                    0
+                )
+        end
+    end
+)
+
+AimTab:CreateToggle({
+    Name = "에임봇",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        AimEnabled = Value
+    end
+})
+
+AimTab:CreateSlider({
+    Name = "FOV",
+    Range = {30,500},
+    Increment = 10,
+    Suffix = "px",
+    CurrentValue = 150,
+
+    Callback = function(Value)
+        AimFOV = Value
+    end
+})
+
+AimTab:CreateSlider({
+    Name = "감지 거리",
+    Range = {100,5000},
+    Increment = 100,
+    Suffix = "m",
+    CurrentValue = 1000,
+
+    Callback = function(Value)
+        AimDistance = Value
+    end
+})
+
+AimTab:CreateSlider({
+    Name = "부드러움",
+    Range = {0.05,1},
+    Increment = 0.05,
+    CurrentValue = 0.15,
+
+    Callback = function(Value)
+        AimSmooth = Value
+    end
+})
+
+AimTab:CreateToggle({
+    Name = "팀원 제외",
+    CurrentValue = true,
+
+    Callback = function(Value)
+        AimTeamCheck = Value
+    end
+})
+
+AimTab:CreateToggle({
+    Name = "FOV 표시",
+    CurrentValue = true,
+
+    Callback = function(Value)
+
+        FOVCircle.Visible =
+            Value and AimEnabled
+
+    end
+})
+
+AimTab:CreateToggle({
+    Name = "Target Lock",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        targetLockOn = Value
+    end
+})
+
+RunService.RenderStepped:Connect(
+    function()
+
+        if not targetLockOn then
+            return
+        end
+
+        local target =
+            getClosest()
+
+        if target
+            and target.Character then
+
+            local head =
+                target.Character:
+                FindFirstChild(
+                    "Head"
+                )
+
+            if head
+                and workspace.CurrentCamera then
+
+                workspace.CurrentCamera.CFrame =
+                    CFrame.new(
+                        workspace.CurrentCamera.CFrame.Position,
+                        head.Position
+                    )
+
+            end
+        end
+    end
+)
+
+AimTab:CreateToggle({
+    Name = "Aimbot Prediction",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        predictionOn = Value
+    end
+})
+
+--==================================================
+-- VISUAL
+--==================================================
+
+local VisualTab =
+    Window:CreateTab(
+        "Visual",
+        4483362458
+    )
+
+--==================================================
+-- ESP
+--==================================================
+
+local espEnabled = false
+local espMaxDistance = 1000
+local espTeamCheck = false
+local espRainbow = false
+local espObjects = {}
+
+local function getRainbowColor()
+
+    return Color3.fromHSV(
+        (tick() % 5) / 5,
+        1,
+        1
+    )
+end
+
+local function getESPColor()
+
+    if espRainbow then
+        return getRainbowColor()
+    end
+
+    return Color3.fromRGB(
+        255,
+        0,
+        0
+    )
+end
+
+local function removeESP(target)
+
+    local highlight =
+        espObjects[target]
+
+    if highlight then
+
+        pcall(function()
+            highlight:Destroy()
+        end)
+
+    end
+
+    espObjects[target] = nil
+end
+
+local function makeESP(target)
+
+    if target == player then
+        return
+    end
+
+    removeESP(target)
+
+    local character =
+        target.Character
+
+    if not character then
+        return
+    end
+
+    local highlight =
+        Instance.new("Highlight")
+
+    highlight.Name =
+        "JASON_ESP"
+
+    highlight.FillTransparency =
+        0.75
+
+    highlight.OutlineTransparency =
+        0
+
+    highlight.FillColor =
+        getESPColor()
+
+    highlight.OutlineColor =
+        getESPColor()
+
+    highlight.Enabled = false
+
+    highlight.Adornee =
+        character
+
+    highlight.Parent =
+        workspace
+
+    espObjects[target] =
+        highlight
+end
+
+local function updateESP()
+
+    local color =
+        getESPColor()
+
+    local myChar =
+        player.Character
+
+    local myRoot =
+        myChar and
+        myChar:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    for target, highlight in pairs(
+        espObjects
+    ) do
+
+        if not highlight
+            or not highlight.Parent then
+
+            espObjects[target] = nil
+
+            continue
+        end
+
+        if not espEnabled then
+
+            highlight.Enabled = false
+
+            continue
+        end
+
+        local targetChar =
+            target.Character
+
+        local targetRoot =
+            targetChar and
+            targetChar:FindFirstChild(
+                "HumanoidRootPart"
+            )
+
+        if not targetChar
+            or not targetRoot
+            or not myRoot then
+
+            highlight.Enabled = false
+
+            continue
+        end
+
+        local distance =
+            (
+                targetRoot.Position
+                - myRoot.Position
+            ).Magnitude
+
+        if distance > espMaxDistance then
+
+            highlight.Enabled = false
+
+        elseif espTeamCheck
+            and target.Team
+            == player.Team then
+
+            highlight.Enabled = false
+
+        else
+
+            highlight.Adornee =
+                targetChar
+
+            highlight.FillColor =
+                color
+
+            highlight.OutlineColor =
+                color
+
+            highlight.Enabled = true
+
+        end
+    end
+end
+
+local function setupESPPlayer(p)
+
+    if p == player then
+        return
+    end
+
+    if p.Character then
+
+        task.defer(function()
+            makeESP(p)
+        end)
+
+    end
+
+    p.CharacterAdded:Connect(
+        function()
+
+            task.wait(0.2)
+
+            if espEnabled
+                or not espObjects[p] then
+
+                makeESP(p)
+
+            end
+        end
+    )
+end
+
+for _, p in ipairs(
+    Players:GetPlayers()
+) do
+
+    setupESPPlayer(p)
+
+end
+
+Players.PlayerAdded:Connect(
+    function(p)
+        setupESPPlayer(p)
+    end
+)
+
+Players.PlayerRemoving:Connect(
+    function(p)
+        removeESP(p)
+    end
+)
+
+RunService.RenderStepped:Connect(
+    updateESP
+)
+
+VisualTab:CreateSection("ESP")
+
+VisualTab:CreateToggle({
+    Name = "ESP",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        espEnabled = Value
+
+        if Value then
+
+            for _, p in ipairs(
+                Players:GetPlayers()
+            ) do
+
+                if p ~= player then
+                    makeESP(p)
+                end
+
+            end
+
+        else
+
+            for _, highlight in pairs(
+                espObjects
+            ) do
+
+                if highlight then
+                    highlight.Enabled = false
+                end
+
+            end
+        end
+    end
+})
+
+VisualTab:CreateDropdown({
+    Name = "ESP 색상 모드",
+
+    Options = {
+        "일반 모드",
+        "무지개 모드"
+    },
+
+    CurrentOption = {
+        "일반 모드"
+    },
+
+    MultipleOptions = false,
+
+    Callback = function(option)
+
+        local mode =
+            type(option) == "table"
+            and option[1]
+            or option
+
+        espRainbow =
+            mode == "무지개 모드"
+
+    end
+})
+
+VisualTab:CreateToggle({
+    Name = "ESP Team Check",
+    CurrentValue = false,
+
+    Callback = function(Value)
+        espTeamCheck = Value
+    end
+})
+
+VisualTab:CreateSlider({
+    Name = "ESP Max Distance",
+    Range = {100,5000},
+    Increment = 100,
+    Suffix = "m",
+    CurrentValue = 1000,
+
+    Callback = function(Value)
+        espMaxDistance = Value
+    end
+})
+
+--==================================================
+-- GRAPHICS
+--==================================================
+
+VisualTab:CreateSection("Graphics")
+
+VisualTab:CreateToggle({
+    Name = "Shader Mode",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        shaderOn = Value
+
+        if Value then
+            createShader()
+        else
+            removeShader()
+        end
+
+    end
+})
+
+VisualTab:CreateToggle({
+    Name = "Night Mode",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        if Value then
+            enableNightMode()
+        else
+            disableNightMode()
+        end
+
+    end
+})
+
+VisualTab:CreateToggle({
+    Name = "Fullbright",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        if Value then
+            enableFullbright()
+        else
+            disableFullbright()
+        end
+
+    end
+})
+
+--==================================================
+-- CAMERA
+--==================================================
+
+VisualTab:CreateSection("Camera")
+
+VisualTab:CreateSlider({
+    Name = "Camera FOV",
+    Range = {40,120},
+    Increment = 5,
+    Suffix = "FOV",
+    CurrentValue = 70,
+
+    Callback = function(Value)
+
+        cameraFOV = Value
+
+        if workspace.CurrentCamera then
+
+            workspace.CurrentCamera.FieldOfView =
+                Value
+
+        end
+    end
+})
+
+VisualTab:CreateSlider({
+    Name = "Camera Zoom",
+    Range = {5,100},
+    Increment = 5,
+    Suffix = "Studs",
+    CurrentValue = 12,
+
+    Callback = function(Value)
+
+        cameraZoom = Value
+
+        player.CameraMaxZoomDistance =
+            Value
+
+    end
+})
+
+--==================================================
+-- TELEPORT
+--==================================================
+
+local TeleportTab =
+    Window:CreateTab(
+        "텔레포트",
+        4483362458
+    )
+
+--==================================================
+-- CLICK TELEPORT
+--==================================================
+
+TeleportTab:CreateSection("Click Teleport")
+
+TeleportTab:CreateToggle({
+    Name = "클릭 텔레포트",
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        clickTeleportOn = Value
+
+        Rayfield:Notify({
+            Title = "JASONHUB V3",
+
+            Content =
+                Value
+                and "화면을 클릭하거나 터치하면 해당 위치로 이동합니다."
+                or "클릭 텔레포트가 꺼졌습니다.",
+
+            Duration = 2
+        })
+
+    end
+})
+
+local function clickTeleport(screenPosition)
+
+    if not clickTeleportOn then
+        return
+    end
+
+    local camera =
+        workspace.CurrentCamera
+
+    if not camera then
+        return
+    end
+
+    local char =
+        player.Character
+
+    if not char then
+        return
+    end
+
+    local root =
+        char:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    if not root then
+        return
+    end
+
+    local ray =
+        camera:ViewportPointToRay(
+            screenPosition.X,
+            screenPosition.Y
+        )
+
+    local params =
+        RaycastParams.new()
+
+    params.FilterDescendantsInstances =
+        {char}
+
+    params.FilterType =
+        Enum.RaycastFilterType.Exclude
+
+    local result =
+        workspace:Raycast(
+            ray.Origin,
+            ray.Direction * 2000,
+            params
+        )
+
+    if result then
+
+        local position =
+            result.Position
+
+        char:PivotTo(
+            CFrame.new(
+                position +
+                Vector3.new(
+                    0,
+                    3,
+                    0
+                )
+            )
+        )
+
+    end
+end
+
+UserInputService.InputBegan:Connect(
+    function(input, gameProcessed)
+
+        if not clickTeleportOn then
+            return
+        end
+
+        if gameProcessed then
+            return
+        end
+
+        if input.UserInputType
+            == Enum.UserInputType.MouseButton1 then
+
+            local mousePos =
+                UserInputService:GetMouseLocation()
+
+            clickTeleport(mousePos)
+
+        elseif input.UserInputType
+            == Enum.UserInputType.Touch then
+
+            clickTeleport(
+                input.Position
+            )
+
+        end
+    end
+)
+
+--==================================================
+-- PLAYER TELEPORT
+--==================================================
+
+TeleportTab:CreateSection(
+    "Player Teleport"
+)
+
+local selectedPlayer = nil
+local savedPosition = nil
+
+local function getPlayerNames()
+
+    local names = {}
+
+    for _, p in ipairs(
+        Players:GetPlayers()
+    ) do
+
+        if p ~= player then
+
+            table.insert(
+                names,
+                p.Name
+            )
+
+        end
+    end
+
+    table.sort(names)
+
+    return names
+end
+
+local dropdown =
+    TeleportTab:CreateDropdown({
+
+        Name = "플레이어 선택",
+
+        Options =
+            getPlayerNames(),
+
+        CurrentOption = {},
+
+        MultipleOptions = false,
+
+        Callback = function(option)
+
+            if type(option) == "table" then
+
+                selectedPlayer =
+                    option[1]
+
+            else
+
+                selectedPlayer =
+                    option
+
+            end
+        end
+    })
+
+local function teleportToPlayer(target)
+
+    if not target then
+        return false
+    end
+
+    local char =
+        player.Character
+
+    local targetChar =
+        target.Character
+
+    if not char or not targetChar then
+        return false
+    end
+
+    local root =
+        targetChar:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    if not root then
+        return false
+    end
+
+    char:PivotTo(
+        root.CFrame *
+        CFrame.new(
+            0,
+            3,
+            0
+        )
+    )
+
+    return true
+end
+
+local function refreshPlayers()
+
+    local names =
+        getPlayerNames()
+
+    pcall(function()
+
+        dropdown:Refresh(
+            names
+        )
+
+    end)
+
+    if selectedPlayer
+        and not Players:FindFirstChild(
+            tostring(selectedPlayer)
+        ) then
+
+        selectedPlayer = nil
+
+    end
+end
+
+TeleportTab:CreateButton({
+    Name = "플레이어 목록 새로고침",
+
+    Callback = function()
+
+        refreshPlayers()
+
+        Rayfield:Notify({
+            Title = "JASONHUB V3",
+            Content =
+                "플레이어 목록을 새로고침했습니다.",
+            Duration = 2
+        })
+
+    end
+})
+
+TeleportTab:CreateButton({
+    Name = "선택한 플레이어에게 이동",
+
+    Callback = function()
+
+        if not selectedPlayer then
+
+            Rayfield:Notify({
+                Title = "JASONHUB V3",
+                Content =
+                    "플레이어를 먼저 선택하세요.",
+                Duration = 2
+            })
+
+            return
+        end
+
+        local target =
+            Players:FindFirstChild(
+                tostring(selectedPlayer)
+            )
+
+        if not target then
+
+            Rayfield:Notify({
+                Title = "JASONHUB V3",
+                Content =
+                    "플레이어를 찾을 수 없습니다.",
+                Duration = 2
+            })
+
+            refreshPlayers()
+
+            return
+        end
+
+        if teleportToPlayer(target) then
+
+            Rayfield:Notify({
+                Title = "JASONHUB V3",
+                Content =
+                    tostring(target.Name)
+                    .. "에게 이동했습니다.",
+                Duration = 2
+            })
+
+        end
+    end
+})
+
+--==================================================
+-- QUICK TELEPORT
+--==================================================
+
+TeleportTab:CreateSection(
+    "Quick Teleport"
+)
+
+local playerButtons = {}
+
+local function clearPlayerButtons()
+
+    for _, button in ipairs(
+        playerButtons
+    ) do
+
+        pcall(function()
+
+            if button.Destroy then
+                button:Destroy()
+            end
+
+        end)
+    end
+
+    table.clear(
+        playerButtons
+    )
+end
+
+local function createPlayerButtons()
+
+    clearPlayerButtons()
+
+    local currentPlayers =
+        Players:GetPlayers()
+
+    table.sort(
+        currentPlayers,
+        function(a,b)
+            return a.Name < b.Name
+        end
+    )
+
+    for _, target in ipairs(
+        currentPlayers
+    ) do
+
+        if target ~= player then
+
+            local button =
+                TeleportTab:CreateButton({
+
+                    Name =
+                        "▶ " ..
+                        target.Name,
+
+                    Callback = function()
+
+                        if teleportToPlayer(
+                            target
+                        ) then
+
+                            Rayfield:Notify({
+                                Title =
+                                    "JASONHUB V3",
+
+                                Content =
+                                    target.Name ..
+                                    "에게 이동했습니다.",
+
+                                Duration = 1.5
+                            })
+
+                        else
+
+                            Rayfield:Notify({
+                                Title =
+                                    "JASONHUB V3",
+
+                                Content =
+                                    "해당 플레이어의 캐릭터를 찾을 수 없습니다.",
+
+                                Duration = 2
+                            })
+
+                        end
+                    end
+                })
+
+            table.insert(
+                playerButtons,
+                button
+            )
+        end
+    end
+end
+
+TeleportTab:CreateButton({
+    Name = "빠른 이동 목록 새로고침",
+
+    Callback = function()
+
+        createPlayerButtons()
+        refreshPlayers()
+
+    end
+})
+
+--==================================================
+-- SAVED POSITION
+--==================================================
+
+TeleportTab:CreateSection(
+    "Saved Position"
+)
+
+TeleportTab:CreateButton({
+    Name = "현재 위치 저장",
+
+    Callback = function()
+
+        local char =
+            player.Character
+
+        local root =
+            char and
+            char:FindFirstChild(
+                "HumanoidRootPart"
+            )
+
+        if root then
+
+            savedPosition =
+                root.CFrame
+
+            Rayfield:Notify({
+                Title =
+                    "JASONHUB V3",
+
+                Content =
+                    "현재 위치가 저장되었습니다.",
+
+                Duration = 2
+            })
+
+        end
+    end
+})
+
+TeleportTab:CreateButton({
+    Name = "저장 위치로 이동",
+
+    Callback = function()
+
+        local char =
+            player.Character
+
+        if char and savedPosition then
+
+            char:PivotTo(
+                savedPosition
+            )
+
+            Rayfield:Notify({
+                Title =
+                    "JASONHUB V3",
+
+                Content =
+                    "저장 위치로 이동했습니다.",
+
+                Duration = 2
+            })
+
+        else
+
+            Rayfield:Notify({
+                Title =
+                    "JASONHUB V3",
+
+                Content =
+                    "저장된 위치가 없습니다.",
+
+                Duration = 2
+            })
+
+        end
+    end
+})
+
+Players.PlayerAdded:Connect(
+    function()
+
+        task.wait(0.5)
+
+        refreshPlayers()
+        createPlayerButtons()
+
+    end
+)
+
+Players.PlayerRemoving:Connect(
+    function(p)
+
+        if selectedPlayer ==
+            p.Name then
+
+            selectedPlayer = nil
+
+        end
+
+        task.wait(0.2)
+
+        refreshPlayers()
+        createPlayerButtons()
+
+    end
+)
+
+task.spawn(function()
+
+    task.wait(1)
+
+    refreshPlayers()
+    createPlayerButtons()
+
+end)
+
+--==================================================
+-- SERVER
+--==================================================
+
+local ServerTab =
+    Window:CreateTab(
+        "Server",
+        4483362458
+    )
+
+ServerTab:CreateSection(
+    "Server"
+)
+
+ServerTab:CreateButton({
+    Name = "Rejoin",
+
+    Callback = function()
+
+        TeleportService:Teleport(
+            game.PlaceId,
+            player
+        )
+
+    end
+})
+
+ServerTab:CreateButton({
+    Name = "Server Hop",
+
+    Callback = function()
+
+        Rayfield:Notify({
+            Title =
+                "JASONHUB V3",
+
+            Content =
+                "새 서버로 이동합니다.",
+
+            Duration = 2
+        })
+
+        pcall(function()
+
+            TeleportService:Teleport(
+                game.PlaceId,
+                player
+            )
+
+        end)
+    end
+})
+
+--==================================================
+-- INFO
+--==================================================
+
+local InfoTab =
+    Window:CreateTab(
+        "Info",
+        4483362458
+    )
+
+local infoParagraph =
+    InfoTab:CreateParagraph({
+
+        Title =
+            "JASONHUB V3",
+
+        Content =
+            "FPS / Ping 정보를 불러오는 중..."
+
+    })
+
+task.spawn(function()
+
+    while task.wait(1) do
+
+        local fps = 0
+
+        pcall(function()
+
+            local dt =
+                RunService.RenderStepped:Wait()
+
+            fps =
+                math.floor(
+                    1 /
+                    math.max(
+                        dt,
+                        0.001
+                    )
+                )
+
+        end)
+
+        local ping = 0
+
+        pcall(function()
+
+            ping =
+                math.floor(
+                    player:GetNetworkPing()
+                    * 1000
+                )
+
+        end)
+
+        pcall(function()
+
+            infoParagraph:Set({
+
+                Title =
+                    "JASONHUB V3",
+
+                Content =
+                    "FPS: "
+                    .. tostring(fps)
+
+                    .. "\nPing: "
+                    .. tostring(ping)
+                    .. " ms"
+
+                    .. "\nPlayers: "
+                    .. tostring(
+                        #Players:GetPlayers()
+                    )
+            })
+
+        end)
+    end
+end)
+
+--==================================================
+-- CLEANUP
+--==================================================
+
+game:BindToClose(
+    function()
+
+        pcall(stopFly)
+        pcall(stopSwim)
+        pcall(stopWallClimb)
+        pcall(disableXRay)
+        pcall(disableFullbright)
+        pcall(removeShader)
+        pcall(disableNightMode)
+
+        for _, obj in pairs(
+            espObjects
+        ) do
+
+            pcall(function()
+                obj:Destroy()
+            end)
+
+        end
+
+        for _, obj in pairs(
+            chams
+        ) do
+
+            pcall(function()
+                obj:Destroy()
+            end)
+
+        end
+
+        pcall(function()
+            CrosshairGui:Destroy()
+        end)
+
+        pcall(function()
+            AimGui:Destroy()
+        end)
+
+    end
+)
+
+--==================================================
+-- LOADED
+--==================================================
+
+Rayfield:Notify({
+    Title =
+        "JASONHUB V3",
+
+    Content =
+        "Sword Fight Loaded!",
+
+    Duration = 4
+})
